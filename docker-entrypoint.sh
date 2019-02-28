@@ -15,7 +15,7 @@ echo "Starting docker process daemon ..."
 if [ "${PRODUCT_EXE}" == "" ]; then
     PRODUCT_EXE=${PRODUCT_EXE:-echo Hello}
     #/bin/bash -c "${PRODUCT_EXE:-echo Hello}"
-    /usr/printVersions.sh
+    /usr/scripts/printVersions.sh
     /bin/bash 
 else
     #### ------------------------------------------------------------------------

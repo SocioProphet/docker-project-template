@@ -83,6 +83,19 @@ Scripts under ./bin have several useful bash scripts to jump start what you need
 2. portainer_resume.sh: Launch portainer to manage all you desktop Docker containers.
 3. container-launcher.sh: Launch specific container using "pattern expression".
 
+# Corporate Proxy Root and Intemediate Certificates setup for System and Web Browsers (FireFox, Chrome, etc)
+1. Save your corporate's Certificates in the currnet GIT directory, `./certificates`
+2. During Docker run command, 
+```
+   -v `pwd`/certificates:/certificates ... (the rest parameters)
+```
+If you want to map to different directory for certificates, e.g., /home/developer/certificates, then
+```
+   -v `pwd`/certificates:/home/developer/certificates -e SOURCE_CERTIFICATES_DIR=/home/developer/certificates ... (the rest parameters)
+```
+3. And, inside the Docker startup script to invoke the `~/scripts/setup_system_certificates.sh`. Note that the script assumes the certficates are in `/certificates` directory.
+4. The script `~/scripts/setup_system_certificates.sh` will automatic copy to target directory and setup certificates for both System commands (wget, curl, etc) to use and Web Browsers'.
+
 # References & Resources
 * [Docker ARG and ENV Guide](https://vsupalov.com/docker-arg-env-variable-guide/)
 * [Docker SECCOMP](https://en.wikipedia.org/wiki/Seccomp)
@@ -93,31 +106,36 @@ Docker is a software that allows to run applications inside of isolated containe
 * [OpenPolicyAgent OPA](https://www.openpolicyagent.org/docs/docker-authorization.html)
 
 # Setup Dockerfile Build behind Corporate Proxies
-* See [Docker Proxy](https://docs.docker.com/engine/reference/commandline/cli/ https://docs.docker.com/network/proxy/)
+* [Docker Proxy](https://docs.docker.com/engine/reference/commandline/cli/ https://docs.docker.com/network/proxy/)
+
+# Proxy & Certificate Setup
+* [Setup System and Browsers Root Certificate](https://thomas-leister.de/en/how-to-import-ca-root-certificate/)
 
 For corporate with proxies, to build the images, you need to setup proxy. The better way to setup proxy for docker build and daemon is to use configuration file and there is no need to change the Dockerfile to contain your proxies setup.
 
 With new feature in docker option --config, you needn't set Proxy in Dockerfile any more.
 
---config string : Location of client config files (default **"~/.docker/config.json"**)
+--config string : Location of client config files (default `~/.docker/config.json`)
 or environment variable DOCKER_CONFIG
 
 `DOCKER_CONFIG` : The location of your client configuration files.
-
-$ export DOCKER_CONFIG=~/.docker/config.json
-It is recommended to set proxy with httpProxy, httpsProxy and ftpProxy in "**~/.docker/config.json**". You need to adjust the DNS proxy hostname accordign to your specifics of your corporate proxy.
+```
+(the following is default docker config file)
+export DOCKER_CONFIG=~/.docker/config.json
+```
+It is recommended to set proxy with httpProxy, httpsProxy and ftpProxy in `~/.docker/config.json` unless it is not feasible to set up this config file, e.g., in Openshift, or Kubernetes environments. You need to adjust the DNS proxy hostname according to your specifics of your corporate proxy.
 ```
 {
- "proxies":
- {
-   "default":
-   {
-     "httpProxy": "http://proxy.openkbs.org:3001",
-     "httpsProxy": "http://proxy.openkbs.org:3001",
-     "ftpProxy": "http://proxy.openkbs.org:3001",
-     "noProxy": "127.0.0.1,localhost,.openkbs.org"
-   }
- }
+    "proxies":
+    {
+        "default":
+        {
+            "httpProxy": "http://proxy.openkbs.org:80",
+            "httpsProxy": "http://proxy.openkbs.org:80",
+            "ftpProxy": "http://proxy.openkbs.org:80",
+            "noProxy": "127.0.0.1,localhost,.openkbs.org"
+        }
+    }
 }
 ```
-Adjust proxy IP and port if needed and save to ~/.docker/config.json
+Adjust proxy IP and port if needed and save to `~/.docker/config.json`
