@@ -33,7 +33,7 @@ BUILD_TYPE=1
 ##       ==> Usually, when not in debugging mode anymore, then use 1 as choice.
 ##       ==> Or, your frequent needs of the container for DEV environment Use.
 ## ------------------------------------------------------------------------
-RUN_TYPE=0
+RUN_TYPE=1
 
 ## ------------------------------------------------------------------------
 ## Change to one (1) if run.sh needs to use host's user/group to run the Container
@@ -47,8 +47,8 @@ USER_VARS_NEEDED=0
 ## Valid "RESTART_OPTION" values:
 ##  { no, on-failure, unless-stopped, always }
 ## ------------------------------------------------------------------------
-RESTART_OPTION=no
-#RESTART_OPTION=unless-stopped
+#RESTART_OPTION=no
+RESTART_OPTION=unless-stopped
 
 ## ------------------------------------------------------------------------
 ## More optional values:
@@ -531,6 +531,37 @@ echo "  ./build.sh : to build the container"
 echo "  ./commit.sh: to push the container image to docker hub"
 echo "--------------------------------------------------------"
 
+#################################
+## ---- Setup X11 Display -_-- ##
+#################################
+function setupDisplayType() {
+    if [[ "$OSTYPE" == "linux-gnu" ]]; then
+        # ...
+        xhost +SI:localuser:$(id -un) 
+        xhost + ${MY_IP}
+        xhost + 127.0.0.1
+        export DISPLAY=${MY_IP}:0 
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        # Mac OSX
+        xhost + 127.0.0.1
+        export DISPLAY=host.docker.internal:0
+    elif [[ "$OSTYPE" == "cygwin" ]]; then
+        # POSIX compatibility layer and Linux environment emulation for Windows
+        export DISPLAY=${MY_IP}:0 
+    elif [[ "$OSTYPE" == "msys" ]]; then
+        # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
+        export DISPLAY=${MY_IP}:0 
+    elif [[ "$OSTYPE" == "freebsd"* ]]; then
+        # ...
+        export DISPLAY=${MY_IP}:0 
+    else
+        # Unknown.
+        echo "Unknown OS TYPE: $OSTYPE! Not supported!"
+        exit 9
+    fi
+    echo ${DISPLAY}
+}
+
 case "${BUILD_TYPE}" in
     0)
         ## 0: (default) has neither X11 nor VNC/noVNC container build image type 
@@ -548,10 +579,7 @@ case "${BUILD_TYPE}" in
     1)
         ## 1: X11/Desktip container build image type
         #### ---- for X11-based ---- ####
-        echo ${DISPLAY}
-        xhost +SI:localuser:$(id -un) 
-        set -x 
-        DISPLAY=${MY_IP}:0 \
+        setupDisplayType
         docker run ${REMOVE_OPTION} ${MORE_OPTIONS} ${RUN_OPTION} \
             --name=${instanceName} \
             --restart=${RESTART_OPTION} \
