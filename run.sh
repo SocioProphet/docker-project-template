@@ -33,7 +33,7 @@ BUILD_TYPE=1
 ##       ==> Usually, when not in debugging mode anymore, then use 1 as choice.
 ##       ==> Or, your frequent needs of the container for DEV environment Use.
 ## ------------------------------------------------------------------------
-RUN_TYPE=1
+RUN_TYPE=0
 
 ## ------------------------------------------------------------------------
 ## Change to one (1) if run.sh needs to use host's user/group to run the Container
@@ -47,15 +47,23 @@ USER_VARS_NEEDED=0
 ## Valid "RESTART_OPTION" values:
 ##  { no, on-failure, unless-stopped, always }
 ## ------------------------------------------------------------------------
-#RESTART_OPTION=no
-RESTART_OPTION=unless-stopped
+RESTART_OPTION=no
+#RESTART_OPTION=unless-stopped
 
 ## ------------------------------------------------------------------------
 ## More optional values:
 ##   Add any additional options here
 ## ------------------------------------------------------------------------
-# MORE_OPTIONS="--privileged=true"
-MORE_OPTIONS=
+#MORE_OPTIONS="--privileged=true"
+MORE_OPTIONS=""
+
+## ------------------------------------------------------------------------
+## Multi-media optional values:
+##   Add any additional options here
+## ------------------------------------------------------------------------
+#MEDIA_OPTIONS=" --device /dev/snd --device /dev/dri  --device /dev/video0  --group-add audio  --group-add video "
+MEDIA_OPTIONS=" --device /dev/snd --device /dev/dri  --group-add audio  --group-add video "
+#MEDIA_OPTIONS=
 
 ###############################################################################
 ###############################################################################
@@ -253,7 +261,6 @@ function generateVolumeMapping() {
             left=`echo $vol|cut -d':' -f1`
             right=`echo $vol|cut -d':' -f2`
             leftHasDot=`echo $left|grep "\./"`
-            leftHasAbsPath=`echo $left|grep "^/"`
             if [ "$leftHasDot" != "" ]; then
                 ## has "./data" on the left
                 if [[ ${right} == "/"* ]]; then
@@ -440,8 +447,8 @@ echo ${privilegedString}
 #### ---- Mostly, you don't need change below ----
 ###################################################
 function cleanup() {
-    if [ ! "`docker ps -a|grep ${instanceName}`" == "" ]; then
-         docker rm -f ${instanceName}
+    if [ ! "`sudo docker ps -a|grep ${instanceName}`" == "" ]; then
+         sudo docker rm -f ${instanceName}
     fi
 }
 
@@ -566,7 +573,7 @@ case "${BUILD_TYPE}" in
     0)
         ## 0: (default) has neither X11 nor VNC/noVNC container build image type 
         set -x 
-        docker run ${REMOVE_OPTION} ${MORE_OPTIONS} ${RUN_OPTION} \
+        sudo docker run ${REMOVE_OPTION} ${MORE_OPTIONS} ${RUN_OPTION} \
             --name=${instanceName} \
             --restart=${RESTART_OPTION} \
             ${privilegedString} \
@@ -579,11 +586,15 @@ case "${BUILD_TYPE}" in
     1)
         ## 1: X11/Desktip container build image type
         #### ---- for X11-based ---- ####
+        ##echo ${DISPLAY}
+        ##xhost +SI:localuser:$(id -un) 
+        ##set -x 
+        ##MORE_OPTIONS="${MORE_OPTIONS} -e DISPLAY=$DISPLAY -v $HOME/.chrome:/data -v /dev/shm:/dev/shm -v /etc/hosts:/etc/hosts"
+        ##DISPLAY=${MY_IP}:0
         setupDisplayType
-        docker run ${REMOVE_OPTION} ${MORE_OPTIONS} ${RUN_OPTION} \
+        sudo docker run ${REMOVE_OPTION} ${RUN_OPTION} ${MORE_OPTIONS} ${MEDIA_OPTIONS}\
             --name=${instanceName} \
             --restart=${RESTART_OPTION} \
-            -e DISPLAY=$DISPLAY \
             -v /tmp/.X11-unix:/tmp/.X11-unix \
             ${privilegedString} \
             ${USER_VARS} \
@@ -603,7 +614,7 @@ case "${BUILD_TYPE}" in
             ENV_VARS="${ENV_VARS} -e VNC_RESOLUTION=${VNC_RESOLUTION}" 
         fi
         set -x 
-        docker run ${REMOVE_OPTION} ${MORE_OPTIONS} ${RUN_OPTION} \
+        sudo docker run ${REMOVE_OPTION} ${MORE_OPTIONS} ${RUN_OPTION} \
             --name=${instanceName} \
             --restart=${RESTART_OPTION} \
             ${privilegedString} \

@@ -55,10 +55,10 @@ USER ${USER}
 USER ${USER_NAME}
 WORKDIR ${HOME}
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+#ENTRYPOINT ["/usr/local/docker-entrypoint.sh"]
+#CMD ["/usr/bin/firefox"]
+CMD ["/usr/bin/google-chrome","--no-sandbox","--disable-extensions"]
 
 #### (Test only)
-CMD ["/usr/bin/firefox"]
-#CMD ["startx /usr/bin/firefox"]
 #CMD ["/bin/bash"]
 
