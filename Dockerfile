@@ -29,8 +29,9 @@ LABEL org.label-schema.url="https://imagelayers.io" \
       org.label-schema.schema-version="1.0"
       
 RUN echo PRODUCT=${PRODUCT} && echo HOME=$HOME && \
+    sudo apt-get update -y && \
     sudo apt-get install dbus-x11 && \
-    sudo apt-get install -y firefox
+    sudo apt-get install -y firefox && sudo apt autoremove
 
 #### --- Copy Entrypoint script in the container ---- ####
 COPY ./docker-entrypoint.sh /
