@@ -28,10 +28,6 @@ LABEL org.label-schema.url="https://imagelayers.io" \
       org.label-schema.description="This utility provides a docker template files for building Docker." \
       org.label-schema.schema-version="1.0"
       
-RUN echo PRODUCT=${PRODUCT} && echo HOME=$HOME && \
-    sudo apt-get update -y && \
-    sudo apt-get install dbus-x11 && \
-    sudo apt-get install -y firefox && sudo apt autoremove
 
 #### --- Copy Entrypoint script in the container ---- ####
 COPY ./docker-entrypoint.sh /
@@ -58,7 +54,11 @@ WORKDIR ${HOME}
 
 #ENTRYPOINT ["/usr/local/docker-entrypoint.sh"]
 #CMD ["/usr/bin/firefox"]
-CMD ["/usr/bin/google-chrome","--no-sandbox","--disable-extensions"]
+# CMD ["/usr/bin/google-chrome","--no-sandbox","--disable-gpu", "--disable-extensions"]
+CMD ["/usr/bin/google-chrome"]
+
+# -- test --
+#CMD xeyes
 
 #### (Test only)
 #CMD ["/bin/bash"]
