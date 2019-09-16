@@ -575,7 +575,8 @@ function setupDisplayType() {
 
 case "${BUILD_TYPE}" in
     0)
-        ## 0: (default) has neither X11 nor VNC/noVNC container build image type 
+        #### 0: (default) has neither X11 nor VNC/noVNC container build image type
+        #### ---- for headless-based / GUI-less ---- ####
         set -x 
         sudo docker run ${REMOVE_OPTION} ${MORE_OPTIONS} ${RUN_OPTION} \
             --name=${instanceName} \
@@ -588,11 +589,10 @@ case "${BUILD_TYPE}" in
             ${imageTag} $*
         ;;
     1)
-        ## 1: X11/Desktip container build image type
+        #### 1: X11/Desktip container build image type
         #### ---- for X11-based ---- ####
-        ##
         set -x 
-        #setupDisplayType
+        setupDisplayType
         echo ${DISPLAY}
         MORE_OPTIONS="${MORE_OPTIONS} -e DISPLAY=$DISPLAY -v $HOME/.chrome:/data -v /dev/shm:/dev/shm -v /etc/hosts:/etc/hosts"
         sudo docker run ${REMOVE_OPTION} ${RUN_OPTION} ${MORE_OPTIONS} ${MEDIA_OPTIONS}\
@@ -607,7 +607,7 @@ case "${BUILD_TYPE}" in
             ${imageTag} $*
         ;;
     2)
-        ## 2: VNC/noVNC container build image type
+        #### 2: VNC/noVNC container build image type
         #### ----------------------------------- ####
         #### -- VNC_RESOLUTION setup default --- ####
         #### ----------------------------------- ####

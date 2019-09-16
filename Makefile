@@ -29,8 +29,11 @@ clean :
 build:
 	docker build --build-arg CIRCLE_SHA1="$(SHA)" --build-arg version=$(VERSION) -t $(DOCKER_REPO)/$(DOCKER):$(VERSION) .
 
-upload: build
+push: build
 	docker push $(DOCKER_REPO)/$(DOCKER):$(VERSION)
+	
+pull:
+    docker pull $(DOCKER_REPO)/$(DOCKER):$(VERSION)
 
 up: build
 	docker-compose up -d
