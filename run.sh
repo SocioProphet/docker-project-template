@@ -347,6 +347,19 @@ echo "PORT_MAP=${PORT_MAP}"
 #### ---- Generate Environment Variables       ----
 ###################################################
 ENV_VARS=""
+function generateEnvVars_v2() {
+    while read line; do
+        echo "Line=$line"
+        key=${line%=*}
+        value=${line#*=}
+        key=$(eval echo $value)
+        ENV_VARS="${ENV_VARS} -e ${line%=*}=$(eval echo $value)"
+    done < <(grep -E "^[[:blank:]]*$1.+[[:blank:]]*=[[:blank:]]*.+[[:blank:]]*" ${DOCKER_ENV_FILE} | grep -v "^#")
+    echo "ENV_VARS=$ENV_VARS"
+}
+generateEnvVars_v2
+echo ">> ENV_VARS=$ENV_VARS"
+
 function generateEnvVars() {
     if [ "${1}" != "" ]; then
         ## -- product key patterns, e.g., "^MYSQL_*"
@@ -357,30 +370,43 @@ function generateEnvVars() {
         #productEnvVars=`grep -E "^[[:blank:]]*$1[a-zA-Z0-9_]+[[:blank:]]*=[[:blank:]]*[a-zA-Z0-9_]+[[:blank:]]*" ${DOCKER_ENV_FILE}`
         productEnvVars=`grep -E "^[[:blank:]]*$1.+[[:blank:]]*=[[:blank:]]*.+[[:blank:]]*" ${DOCKER_ENV_FILE} | grep -v "^#"`
     fi
+    for vars in 
+        do
+        echo "Line=$line"
+        key=${line%=*}
+        value=${line#*=}
+        #key=$(eval echo $value)
+        #ENV_VARS="${ENV_VARS} -e ${line%=*}=$(eval echo $value)"
+        ENV_VARS="${ENV_VARS} -e ${line}"
+    done
     ENV_VARS_STRING=""
     for vars in ${productEnvVars// /}; do
         debug "Entry => $vars"
+        key=${vars%=*}
+        value=${vars#*=}
         if [ "$1" != "" ]; then
             matched=`echo $vars|grep -E "${1}"`
             if [ ! "$matched" == "" ]; then
-                ENV_VARS_STRING="${ENV_VARS_STRING} ${vars}"
+                ENV_VARS="${ENV_VARS} -e $key=$(eval echo $value)"
+                #ENV_VARS="${ENV_VARS} ${vars}"
             fi
         else
-            ENV_VARS_STRING="${ENV_VARS_STRING} ${vars}"
+            #ENV_VARS="${ENV_VARS} ${vars}"
+            ENV_VARS="${ENV_VARS} -e $key=$(eval echo $value)"
         fi
     done
-    ## IFS default is "space tab newline" already
-    #IFS=',; ' read -r -a ENV_VARS_ARRAY <<< "${ENV_VARS_STRING}"
-    read -r -a ENV_VARS_ARRAY <<< "${ENV_VARS_STRING}"
-    # To iterate over the elements:
-    for element in "${ENV_VARS_ARRAY[@]}"
-    do
-        ENV_VARS="${ENV_VARS} -e ${element}"
-    done
-    if [ $DEBUG -gt 0 ]; then echo "ENV_VARS_ARRAY=${ENV_VARS_ARRAY[@]}"; fi
+#    ## IFS default is "space tab newline" already
+#    #IFS=',; ' read -r -a ENV_VARS_ARRAY <<< "${ENV_VARS_STRING}"
+#    read -r -a ENV_VARS_ARRAY <<< "${ENV_VARS_STRING}"
+#    # To iterate over the elements:
+#    for element in "${ENV_VARS_ARRAY[@]}"
+#    do
+#        ENV_VARS="${ENV_VARS} -e ${element}"
+#    done
+#    if [ $DEBUG -gt 0 ]; then echo "ENV_VARS_ARRAY=${ENV_VARS_ARRAY[@]}"; fi
 }
-generateEnvVars
-echo "ENV_VARS=${ENV_VARS}"
+#generateEnvVars
+#echo "ENV_VARS=${ENV_VARS}"
 
 ###################################################
 #### ---- Setup Docker Build Proxy ----
