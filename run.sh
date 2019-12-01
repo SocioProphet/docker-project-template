@@ -247,6 +247,21 @@ function debug() {
     fi
 }
 
+function cutomizedVolume() {
+    DATA_VOLUME=$1 
+    if [ "`echo $DATA_VOLUME|grep 'volume-'`" != "" ]; then
+        docker_volume=`echo $DATA_VOLUME | cut -d'-' -f2 | cut -d':' -f1`
+        dest_volume=`echo $DATA_VOLUME | cut -d'-' -f2 | cut -d':' -f2`
+        source_volume=$(basename $imageTag)_${docker_volume}
+        sudo docker volume create ${source_volume}
+        
+        VOLUME_MAP="-v ${source_volume}:${dest_volume} ${VOLUME_MAP}"
+    else
+        echo "---- ${DATA_VOLUME} already is defined! Hence, ignore setup ${DATA_VOLUME} ..."
+        echo "---> VOLUME_MAP=${VOLUME_MAP}"
+    fi
+}
+
 function generateVolumeMapping() {
     if [ "$VOLUMES_LIST" == "" ]; then
         ## -- If locally defined in this file, then respect that first.
@@ -258,50 +273,54 @@ function generateVolumeMapping() {
         hasColon=`echo $vol|grep ":"`
         ## -- allowing change local volume directories --
         if [ "$hasColon" != "" ]; then
-            left=`echo $vol|cut -d':' -f1`
-            right=`echo $vol|cut -d':' -f2`
-            leftHasDot=`echo $left|grep "\./"`
-            if [ "$leftHasDot" != "" ]; then
-                ## has "./data" on the left
-                if [[ ${right} == "/"* ]]; then
-                    ## -- pattern like: "./data:/containerPath/data"
-                    debug "-- pattern like ./data:/data --"
-                    VOLUME_MAP="${VOLUME_MAP} -v `pwd`/${left}:${right}"
-                else
-                    ## -- pattern like: "./data:data"
-                    debug "-- pattern like ./data:data --"
-                    VOLUME_MAP="${VOLUME_MAP} -v `pwd`/${left}:${DOCKER_VOLUME_DIR}/${right}"
-                fi
-                mkdir -p `pwd`/${left}
-                if [ $DEBUG -gt 0 ]; then ls -al `pwd`/${left}; fi
+            if [ "`echo $vol|grep 'volume-'`" != "" ]; then
+                cutomizedVolume $vol
             else
-                ## No "./data" on the left
-                if [ "$leftHasAbsPath" != "" ]; then
-                    ## Has pattern like "/data" on the left
+                left=`echo $vol|cut -d':' -f1`
+                right=`echo $vol|cut -d':' -f2`
+                leftHasDot=`echo $left|grep "\./"`
+                if [ "$leftHasDot" != "" ]; then
+                    ## has "./data" on the left
                     if [[ ${right} == "/"* ]]; then
-                        ## -- pattern like: "/data:/containerPath/data"
-                        debug "-- pattern like /data:/containerPath/data --"
-                        VOLUME_MAP="${VOLUME_MAP} -v ${left}:${right}"
-                    else
-                        ## -- pattern like: "/data:data"
-                        debug "-- pattern like /data:data --"
-                        VOLUME_MAP="${VOLUME_MAP} -v ${left}:${DOCKER_VOLUME_DIR}/${right}"
-                    fi
-                    mkdir -p ${LOCAL_VOLUME_DIR}/${left}
-                    if [ $DEBUG -gt 0 ]; then ls -al ${LOCAL_VOLUME_DIR}/${left}; fi
-                else
-                    ## No pattern like "/data" on the left
-                    if [[ ${right} == "/"* ]]; then
-                        ## -- pattern like: "data:/containerPath/data"
+                        ## -- pattern like: "./data:/containerPath/data"
                         debug "-- pattern like ./data:/data --"
-                        VOLUME_MAP="${VOLUME_MAP} -v ${LOCAL_VOLUME_DIR}/${left}:${right}"
+                        VOLUME_MAP="${VOLUME_MAP} -v `pwd`/${left}:${right}"
                     else
-                        ## -- pattern like: "data:data"
-                        debug "-- pattern like data:data --"
-                        VOLUME_MAP="${VOLUME_MAP} -v ${LOCAL_VOLUME_DIR}/${left}:${DOCKER_VOLUME_DIR}/${right}"
+                        ## -- pattern like: "./data:data"
+                        debug "-- pattern like ./data:data --"
+                        VOLUME_MAP="${VOLUME_MAP} -v `pwd`/${left}:${DOCKER_VOLUME_DIR}/${right}"
                     fi
-                    mkdir -p ${LOCAL_VOLUME_DIR}/${left}
-                    if [ $DEBUG -gt 0 ]; then ls -al ${LOCAL_VOLUME_DIR}/${left}; fi
+                    mkdir -p `pwd`/${left}
+                    if [ $DEBUG -gt 0 ]; then ls -al `pwd`/${left}; fi
+                else
+                    ## No "./data" on the left
+                    if [ "$leftHasAbsPath" != "" ]; then
+                        ## Has pattern like "/data" on the left
+                        if [[ ${right} == "/"* ]]; then
+                            ## -- pattern like: "/data:/containerPath/data"
+                            debug "-- pattern like /data:/containerPath/data --"
+                            VOLUME_MAP="${VOLUME_MAP} -v ${left}:${right}"
+                        else
+                            ## -- pattern like: "/data:data"
+                            debug "-- pattern like /data:data --"
+                            VOLUME_MAP="${VOLUME_MAP} -v ${left}:${DOCKER_VOLUME_DIR}/${right}"
+                        fi
+                        mkdir -p ${LOCAL_VOLUME_DIR}/${left}
+                        if [ $DEBUG -gt 0 ]; then ls -al ${LOCAL_VOLUME_DIR}/${left}; fi
+                    else
+                        ## No pattern like "/data" on the left
+                        if [[ ${right} == "/"* ]]; then
+                            ## -- pattern like: "data:/containerPath/data"
+                            debug "-- pattern like ./data:/data --"
+                            VOLUME_MAP="${VOLUME_MAP} -v ${LOCAL_VOLUME_DIR}/${left}:${right}"
+                        else
+                            ## -- pattern like: "data:data"
+                            debug "-- pattern like data:data --"
+                            VOLUME_MAP="${VOLUME_MAP} -v ${LOCAL_VOLUME_DIR}/${left}:${DOCKER_VOLUME_DIR}/${right}"
+                        fi
+                        mkdir -p ${LOCAL_VOLUME_DIR}/${left}
+                        if [ $DEBUG -gt 0 ]; then ls -al ${LOCAL_VOLUME_DIR}/${left}; fi
+                    fi
                 fi
             fi
         else
