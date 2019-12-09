@@ -492,8 +492,10 @@ echo ${privilegedString}
 #### ---- Mostly, you don't need change below ----
 ###################################################
 function cleanup() {
-    if [ ! "`sudo docker ps -a|grep ${instanceName}`" == "" ]; then
-         sudo docker rm -f ${instanceName}
+    containerID=`sudo docker ps -a|grep "${instanceName}" | awk '{print $1}'`
+    # if [ ! "`sudo docker ps -a|grep ${instanceName}`" == "" ]; then
+    if [ "${containerID}" != "" ]; then
+         sudo docker rm -f ${containerID}
     fi
 }
 
