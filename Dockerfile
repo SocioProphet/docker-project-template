@@ -19,16 +19,16 @@ ENV PRODUCT_DIR=${PRODUCT_DIR}
 ENV PRODUCT_EXE=${PRODUCT_EXE}
 
 # Metadata
-LABEL org.label-schema.url="https://imagelayers.io" \
+LABEL org.label-schema.url="https://openkbs.org/" \
       org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.version=$VERSION \
       org.label-schema.vcs-url="https://github.com/microscaling/imagelayers-graph.git" \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.docker.dockerfile="/Dockerfile" \
       org.label-schema.description="This utility provides a docker template files for building Docker." \
+      org.label-schema.url="https://openkbs.org/" \
       org.label-schema.schema-version="1.0"
       
-
 #### --- Copy Entrypoint script in the container ---- ####
 COPY ./docker-entrypoint.sh /
 
