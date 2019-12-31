@@ -26,8 +26,19 @@ SHA := $(shell git describe --match=NeVeRmAtCh --always --abbrev=40 --dirty=*)
 clean :
 	echo $(NAME) $(DOCKER_REPO)/$(DOCKER):$(VERSION) 
 
+    default: docker_build
+
+    docker_build:
+      @docker build \
+        --build-arg VCS_REF=`git rev-parse --short HEAD` \
+        --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` .
 build:
-	docker build --build-arg CIRCLE_SHA1="$(SHA)" --build-arg version=$(VERSION) -t $(DOCKER_REPO)/$(DOCKER):$(VERSION) .
+	docker build \
+	    --build-arg CIRCLE_SHA1="$(SHA)" \
+	    --build-arg version=$(VERSION) \
+	    --build-arg VCS_REF=`git rev-parse --short HEAD` \
+        --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+	    -t $(DOCKER_REPO)/$(DOCKER):$(VERSION) .
 
 push: build
 	docker push $(DOCKER_REPO)/$(DOCKER):$(VERSION)
