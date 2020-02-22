@@ -2,6 +2,8 @@ FROM openkbs/jdk-mvn-py3-x11
 
 MAINTAINER DrSnowbird "DrSnowbird@openkbs.org"
 
+ENV DISPLAY=${DISPLAY:-":0.0"}
+
 #### ---- Build Specification ----
 # Metadata params
 ARG BUILD_DATE=${BUILD_DATE:-}
@@ -32,34 +34,33 @@ LABEL org.label-schema.url="https://openkbs.org/" \
 #### --- Copy Entrypoint script in the container ---- ####
 COPY ./docker-entrypoint.sh /
 
+
+# ref: https://linuxize.com/post/how-to-install-google-chrome-web-browser-on-debian-10/
+#### ---------------------------------------------------------------
+#### ----  Install Google Chrome Web Browser on Debian 10 Linux ----
+#### ---------------------------------------------------------------
+ARG GOOGLE_DEB=${GOOGLE_DEB:-google-chrome-stable_current_amd64.deb}
+RUN sudo apt install -y dbus-x11 && \
+    sudo wget -c https://dl.google.com/linux/direct/${GOOGLE_DEB} && \
+    sudo apt install -y ./${GOOGLE_DEB} && \
+    sudo rm -f ./${GOOGLE_DEB}
+    
 #### ------------------------
 #### ---- user: Non-Root ----
 #### ------------------------
 
-ENV USER=${USER:-developer}
-ENV USER_NAME=${USER}
-
-ENV HOME=/home/${USER}
-
-RUN mkdir -p ${HOME}/workspace && \
-    chown ${USER}:${USER} -R ${HOME}/workspace
-
-WORKDIR ${HOME}
-
-USER ${USER}
-
 #### --- Enterpoint for container ---- ####
-USER ${USER_NAME}
+USER ${USER}
 WORKDIR ${HOME}
 
-#ENTRYPOINT ["/usr/local/docker-entrypoint.sh"]
+#ENTRYPOINT ["/docker-entrypoint.sh"]
 #CMD ["/usr/bin/firefox"]
-# CMD ["/usr/bin/google-chrome","--no-sandbox","--disable-gpu", "--disable-extensions"]
-CMD ["/usr/bin/google-chrome"]
+#CMD ["/usr/bin/google-chrome","--no-sandbox","--disable-gpu", "--disable-extensions"]
+#CMD ["/usr/bin/google-chrome"]
 
 # -- test --
 #CMD xeyes
 
 #### (Test only)
-#CMD ["/bin/bash"]
+CMD ["/bin/bash"]
 

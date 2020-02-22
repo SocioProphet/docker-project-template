@@ -28,6 +28,12 @@ If you have a file named .env in your project, it’s only used to put values in
 ```
 docker run --env-file=./docker-run.env ...
 ```
+# How to Google-Chrome running:
+To start google-chrome, use the full command below
+```
+google-chrome --no-sandbox --disable-gpu --disable-extensions
+```
+
 # Resources
 - This project template folder assumes you like to adopt and use simple command-based Docker life-cycle paradigm using containers:
 1. OpenKBS Docker HUB [https://hub.docker.com/r/openkbs/] - for pulling the ready to use public Docker Images.

@@ -7,14 +7,15 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: docker-project-template
+    env_file:
+      - ./.env
     environment:
       - USER_ID=${USER_ID:-1000}
       - GROUP_ID=${GROUP_ID:-1000}
-    env_file:
-      - ./.env
-#    ports:
-#      - 8080:8080
+      - DISPLAY=$DISPLAY
+      - DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
     volumes:
+      - /run/dbus:/host/run/dbus
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ./workspace:/home/developer/workspace
-
+      - ./data:/home/developer/data
