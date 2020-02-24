@@ -61,8 +61,8 @@ RESTART_OPTION=${RESTART_OPTION:-no}
 ## More optional values:
 ##   Add any additional options here
 ## ------------------------------------------------------------------------
-MORE_OPTIONS="--privileged=true"
-#MORE_OPTIONS=""
+#MORE_OPTIONS="--privileged=true"
+MORE_OPTIONS=""
 
 ## ------------------------------------------------------------------------
 ## Multi-media optional values:
