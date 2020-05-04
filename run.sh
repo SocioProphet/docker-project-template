@@ -152,6 +152,27 @@ ORGANIZATION=openkbs
 baseDataFolder="$HOME/data-docker"
 
 ###################################################
+#### ---- Detect Host OS Type and minor Tweek: ----
+###################################################
+SED_MAC_FIX="''"
+CP_OPTION="--backup=numbered"
+HOST_IP=127.0.0.1
+function get_HOST_IP() {
+    if [[ "$OSTYPE" == "linux-gnu" ]]; then
+        # Linux ...
+        HOST_IP=`ip route get 1|grep via | awk '{print $7}' `
+        SED_MAC_FIX=
+    elif [[ $OSTYPE == darwin* ]]; then
+        # Mac OSX
+        HOST_IP=`ifconfig | grep "inet " | grep -Fv 127.0.0.1 | grep -Fv 192.168 | awk '{print $2}'`
+        CP_OPTION=
+    fi
+    echo "HOST_IP=${HOST_IP}"
+}
+get_HOST_IP
+MY_IP=${HOST_IP}
+
+###################################################
 #### **** Container package information ****
 ###################################################
 MY_IP=` hostname -I|awk '{print $1}'`
@@ -604,6 +625,8 @@ function setupDisplayType() {
         echo ${DISPLAY}
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         # Mac OSX
+        # if you want to multi-media, you need customize it here
+        MEDIA_OPTIONS=
         xhost + 127.0.0.1
         export DISPLAY=host.docker.internal:0
         echo ${DISPLAY}

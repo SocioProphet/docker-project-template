@@ -40,9 +40,9 @@ COPY ./docker-entrypoint.sh /
 #### ----  Install Google Chrome Web Browser on Debian 10 Linux ----
 #### ---------------------------------------------------------------
 ARG GOOGLE_DEB=${GOOGLE_DEB:-google-chrome-stable_current_amd64.deb}
-RUN sudo apt install -y dbus-x11 && \
-    sudo wget -c https://dl.google.com/linux/direct/${GOOGLE_DEB} && \
-    sudo apt install -y ./${GOOGLE_DEB} && \
+RUN sudo apt-get install -y dbus-x11 && \
+    sudo wget -qc https://dl.google.com/linux/direct/${GOOGLE_DEB} && \
+    sudo apt-get install -y ./${GOOGLE_DEB} && \
     sudo rm -f ./${GOOGLE_DEB}
     
 #### ------------------------
