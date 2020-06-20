@@ -34,17 +34,34 @@ LABEL org.label-schema.url="https://openkbs.org/" \
 #### --- Copy Entrypoint script in the container ---- ####
 COPY ./docker-entrypoint.sh /
 
-
 # ref: https://linuxize.com/post/how-to-install-google-chrome-web-browser-on-debian-10/
 #### ---------------------------------------------------------------
 #### ----  Install Google Chrome Web Browser on Debian 10 Linux ----
 #### ---------------------------------------------------------------
 ARG GOOGLE_DEB=${GOOGLE_DEB:-google-chrome-stable_current_amd64.deb}
-RUN sudo apt-get install -y dbus-x11 && \
+RUN sudo apt-get -y update && sudo apt-get install -y dbus-x11 && \
     sudo wget -qc https://dl.google.com/linux/direct/${GOOGLE_DEB} && \
     sudo apt-get install -y ./${GOOGLE_DEB} && \
+    sudo chown -R $USER:$USER $HOME/.cache && \
     sudo rm -f ./${GOOGLE_DEB}
     
+ENV DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
+
+RUN sudo chmod -R 0777 /host/run/dbus/system_bus_socket
+
+#### ------------------------
+#### ---- python3: venv  ----
+#### ------------------------
+RUN mkdir ${HOME}/bin
+COPY ./bin/create-venv.sh ${HOME}/bin/
+COPY ./bin/setup_venv_bash_profile.sh ${HOME}/bin/
+
+RUN sudo chown -R $USER:$USER ${HOME}/bin
+RUN ${HOME}/bin/create-venv.sh myvenv
+RUN ${HOME}/bin/setup_venv_bash_profile.sh
+
+RUN ls -al $HOME/bin
+
 #### ------------------------
 #### ---- user: Non-Root ----
 #### ------------------------
@@ -58,9 +75,4 @@ WORKDIR ${HOME}
 #CMD ["/usr/bin/google-chrome","--no-sandbox","--disable-gpu", "--disable-extensions"]
 #CMD ["/usr/bin/google-chrome"]
 
-# -- test --
-#CMD xeyes
-
-#### (Test only)
-CMD ["/bin/bash"]
 
