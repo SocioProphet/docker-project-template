@@ -34,6 +34,8 @@ LABEL org.label-schema.url="https://openkbs.org/" \
 #### --- Copy Entrypoint script in the container ---- ####
 COPY ./docker-entrypoint.sh /
 
+RUN echo "Set disable_coredump false" | sudo tee -a /etc/sudo.conf
+
 # ref: https://linuxize.com/post/how-to-install-google-chrome-web-browser-on-debian-10/
 #### ---------------------------------------------------------------
 #### ----  Install Google Chrome Web Browser on Debian 10 Linux ----
@@ -42,7 +44,6 @@ ARG GOOGLE_DEB=${GOOGLE_DEB:-google-chrome-stable_current_amd64.deb}
 RUN sudo apt-get -y update && sudo apt-get install -y dbus-x11 && \
     sudo wget -qc https://dl.google.com/linux/direct/${GOOGLE_DEB} && \
     sudo apt-get install -y ./${GOOGLE_DEB} && \
-    sudo chown -R $USER:$USER $HOME/.cache && \
     sudo rm -f ./${GOOGLE_DEB}
     
 ENV DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
