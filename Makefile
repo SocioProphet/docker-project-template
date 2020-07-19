@@ -38,7 +38,7 @@ REGISTRY_IMAGE=$(REGISTRY_HOST)/$(ORGANIZATION)/$(DOCKER_NAME)
 VERSION?="$(APP_VERSION)"
 
 ## -- Uncomment this to use local Registry Host --
-DOCKER_REPO := $(ORGANIZATION)/$(DOCKER_NAME)
+DOCKER_IMAGE := $(ORGANIZATION)/$(DOCKER_NAME)
 
 ## -- To Check syntax:
 #  cat -e -t -v Makefile
@@ -58,7 +58,7 @@ SHA := $(shell git describe --match=NeVeRmAtCh --always --abbrev=40 --dirty=*)
 .PHONY: clean rmi build push pull up down run stop exec
 
 clean:
-	echo $(DOCKER_NAME) $(DOCKER_REPO)/$(DOCKER_NAME):$(VERSION) 
+	echo $(DOCKER_NAME) $(DOCKER_IMAGE):$(VERSION) 
 
 default: build
 
@@ -69,11 +69,11 @@ build:
 	--build-arg version=$(VERSION) \
 	--build-arg VCS_REF=`git rev-parse --short HEAD` \
 	--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-	-t $(DOCKER_REPO)/$(DOCKER_NAME):$(VERSION) .
+	-t $(DOCKER_IMAGE):$(VERSION) .
 
 push: build
 	sudo docker commit -m "$comment" ${containerID} ${imageTag}:$(VERSION)
-	sudo docker push $(DOCKER_REPO)/$(DOCKER_NAME):$(VERSION)
+	sudo docker push $(DOCKER_IMAGE):$(VERSION)
 
 	docker tag $(imageTag):$(VERSION) $(REGISTRY_IMAGE):$(VERSION)
 	#sudo docker tag $(imageTag):latest $(REGISTRY_IMAGE):latest
@@ -85,7 +85,7 @@ push: build
 	fi
 pull:
 	@if [ "$(REGISTRY_HOST)" = "" ]; then \
-		sudo docker pull $(DOCKER_REPO)/$(DOCKER_NAME):$(VERSION) ; \
+		sudo docker pull $(DOCKER_IMAGE):$(VERSION) ; \
 	else \
 		sudo docker pull $(REGISTRY_IMAGE):$(VERSION) ; \
 	fi
@@ -98,7 +98,7 @@ down:
 	sudo docker-compose down
 
 run:
-	sudo docker run --name=$(DOCKER_NAME) --restart=$(RESTART_OPTION) $(VOLUME_MAP) $(DOCKER_REPO)/$(DOCKER_NAME):$(VERSION)
+	sudo docker run --name=$(DOCKER_NAME) --restart=$(RESTART_OPTION) $(VOLUME_MAP) $(DOCKER_IMAGE):$(VERSION)
 
 stop: run
 	sudo docker stop --name=$(DOCKER_NAME)
