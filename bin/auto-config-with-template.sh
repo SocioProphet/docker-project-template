@@ -74,14 +74,14 @@ DOCKER_HOST_NAME=`hostname -f`
 countShift=0
 function processFlags() {
     moreFlag=1
-    while [ $# -gt 0 ] && [ $moreFlag -gt 0 ] ; do
+    while [ $moreFlag -gt 0 ] ; do
       case $1 in
         "-l")
           DOCKER_HOST_IP="127.0.01"
           DOCKER_HOST_NAME="localhost"
           TEMPLATE_FILE=".env.template"
           countShift=$((countShift+1))
-          shift 1
+          shift
           ;;
         "-i")
           DOCKER_HOST_IP=$2
@@ -103,12 +103,18 @@ function processFlags() {
     done
 }
 
-echo "========> Before processFlags: $*"
+
+echo "========> Before processFlags: $*"	
+
 if [ $# -gt 0 ]; then
     echo "$@"
     processFlags "$@"
 fi
 
+while [ $countShift -gt 0 ]; do	
+    countShift=$((countShift-1))	
+    shift 1	
+done	
 echo "Remaining arguments: $*"
 
 TEMPLATE_FILE_PATH=$1

@@ -14,6 +14,6 @@ PROJ_DIR=$(dirname $DIR)
 
 cd ${PROJ_DIR}
 
-bin/auto-config-with-template.sh .env.template
-bin/auto-config-with-template.sh docker-compose.template
+bin/auto-config-with-template.sh $@ .env.template
+bin/auto-config-with-template.sh $@ docker-compose.yml.template
 
