@@ -1,4 +1,6 @@
-#!/bin/bash  -x
+#!/bin/bash -x
+
+set -e
 
 ################################ Usage #######################################
 
@@ -10,11 +12,18 @@
 # DOCKER_HOST_IP=10.128.1.123
 # DOCKER_HOST_NAME=server01.openkbs.org
 
+function usage() {
+    echo "-----------------------------------------------------------------------------------------------"
+    echo "Usage:"
+    echo "  $(basename $0) [-i <ip_address>: Use IP Address instead of Hostname]"
+    echo "                 [-n <hostname>: Use Hostname instead of IP]"
+    echo "                 [-l]: Use localhost,127.0.0.1 as Docker Host's Hostname/IP Address ]"
+    echo "-----------------------------------------------------------------------------------------------"
+}
+
 ## ---------- ##
 ## -- main -- ##
 ## ---------- ##
-
-set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
@@ -55,7 +64,6 @@ function find_host_ip() {
 }
 find_host_ip
 
-
 #### ---- Docker HOST's IP ----
 #DOCKER_HOST_IP=`ip route get 1|grep via | awk '{print $7}'`
 DOCKER_HOST_IP=${HOST_IP}
@@ -63,13 +71,67 @@ DOCKER_HOST_NAME=`hostname -f`
 
 ## -- Variables to initialization:  --
 
-## (whether to use Hostname or not (use IP)
-USE_NAME=1
+countShift=0
+function processFlags() {
+    moreFlag=1
+    while [ $# -gt 0 ]; do
+      case $1 in
+        "-l")
+          DOCKER_HOST_IP="127.0.01"
+          DOCKER_HOST_NAME="localhost"
+          TEMPLATE_FILE=".env.template"
+          countShift=$((countShift+1))
+          shift 1
+          ;;
+        "-i")
+          DOCKER_HOST_IP=$2
+          echo "--- Use the given HOstname or IP address to generate .env file"
+          countShift=$((countShift+2))
+          shift 2
+          ;;
+        "-n")
+          DOCKER_HOST_NAME=$2
+          echo "--- Use the given HOstname or IP address to generate .env file"
+          countShift=$((countShift+2))
+          shift 2
+          ;;
+        *)
+          moreFlag=0
+          echo "*** ERROR: Unknown flags to process ..."
+          usage
+          ;;
+      esac
+    done
+}
 
+echo "========> Before processFlags: $*"
+if [ $# -gt 0 ]; then
+    echo "$@"
+    processFlags "$@"
+fi
+
+while [ $countShift -gt 0 ]; do
+    countShift=$((countShift-1))
+    shift 1
+done
 echo "Remaining arguments: $*"
 
+
+function setup_template_file() {
+    if [ $# -gt 0 ]; then
+        # get 
+        TEMPLATE_FILE_PATH = $1
+    else 
+        echo "... Use default template file: .env.template"
+        #usage $*
+    fi
+}
+setup_template_file
+
+echo "## ---- check the exsitence of template file: ${TEMPLATE_FILE_PATH}"
 if [ ! -s "${TEMPLATE_FILE_PATH}" ]; then
     echo "*** ERROR: Template file: ${TEMPLATE_FILE_PATH} not found! Abort"
+    exit 1
 else
     echo "--- OK: Template file: ${TEMPLATE_FILE_PATH} found! Continue ..."
 fi
@@ -108,16 +170,18 @@ for f in $files; do
     cat ${AUTO_GEN_FILE}
     #diff $f ${AUTO_GEN_FILE}
     echo "---- Auto-generated file: ${AUTO_GEN_FILE}"
-    docker_compose=docker-compose.yml
+    # Template file name should be .env.template or docker-compose.yml.template:
+    # So, the trailing ".template" will be removed to be used to generate the target file.
+    target_filename=${f%%.template} # docker-compose.yml
     if [ -s  ]; then
-        if [ ! -d ${docker_compose}.BACKUP ]; then
-            mkdir -p ${docker_compose}.BACKUP
+        if [ ! -d ${target_filename}.BACKUP ]; then
+            mkdir -p ${target_filename}.BACKUP
         fi
-        cp ${CP_OPTION} ${docker_compose} ${docker_compose}.BACKUP/
-        echo "... Old ${docker_compose} file is save to: ${docker_compose}.BACKUP/"
-        #mv ${docker_compose} ${docker_compose}.BACKUP/${docker_compose}_$(date '+%F').SAVE
-        # echo "... Old ${docker_compose} file is save to: ${docker_compose}_$(date '+%F').SAVE"
+        cp ${CP_OPTION} ${target_filename} ${target_filename}.BACKUP/
+        echo "... Old ${target_filename} file is save to: ${target_filename}.BACKUP/"
+        #mv ${target_filename} ${target_filename}.BACKUP/${target_filename}_$(date '+%F').SAVE
+        # echo "... Old ${target_filename} file is save to: ${target_filename}_$(date '+%F').SAVE"
     fi
-    mv ${AUTO_GEN_FILE} ${docker_compose}
+    mv ${AUTO_GEN_FILE} ${target_filename}
 done
 
