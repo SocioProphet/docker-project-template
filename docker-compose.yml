@@ -32,14 +32,12 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix
       #- ./certificates:/home/developer/certificates
       ## ==== Use $HOME/data-docker as base directory: ====
-      - $HOME/data-docker/knime-vnc-docker/app:/home/developer/app
-      - $HOME/data-docker/knime-vnc-docker/data:/home/developer/data
-      - $HOME/data-docker/knime-vnc-docker/workspace:/home/developer/workspace
+      #- $HOME/data-docker/docker-project-template/data:/home/developer/data
+      #- $HOME/data-docker/docker-project-template/workspace:/home/developer/workspace
       ## ==== Use current directory as root for mapping Volumes ====
       ## (You need to manually create those child directory: ./data, ./workspace, and others)
-      #- ./app:/home/developer/app
-      #- ./data:/home/developer/data
-      #- ./workspace:/home/developer/workspace
+      - ./data:/home/developer/data
+      - ./workspace:/home/developer/workspace
  
     ## -------------------------------
     ## -- Change to your specific port
