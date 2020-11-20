@@ -82,7 +82,14 @@ Note that the script "run.sh" is designed to generic for every project with assu
 ```
 ./run.sh
 ```
-
+Or,
+```
+docker-compose up
+```
+Or,
+```
+make up
+```
 # Utility Scripts
 Scripts under ./bin have several useful bash scripts to jump start what you need.
 1. dockerCE-install.sh: Install docker CE with latest version available.
